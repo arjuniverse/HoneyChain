@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Honey Chain — System Architecture</title>
+<style>
+  :root{
+    --bee:#3E2723; --bee-soft:#6d4c41; --honey:#D98A0F; --honey-deep:#B3660B;
+    --ink:#33261f; --muted:#7d6a5c; --card:#ffffff; --line:#ead9c0;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{width:1920px; height:1080px; overflow:hidden; background:#FDF6E9; font-family:'Segoe UI', system-ui, -apple-system, Arial, sans-serif;}
+  .hex{
+    background-color:#FDF6E9;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cpath d='M28 0 L56 16 L56 50 L28 66 L0 50 L0 16 Z' fill='none' stroke='%23D98A0F' stroke-opacity='0.10' stroke-width='2'/%3E%3Cpath d='M28 34 L56 50 L56 84 L28 100 L0 84 L0 50 Z' fill='none' stroke='%23D98A0F' stroke-opacity='0.10' stroke-width='2'/%3E%3C/svg%3E");
+  }
+  .slide{width:1920px;height:1080px;position:relative;padding:26px 60px 24px;}
+  /* Title */
+  .head{display:flex;align-items:flex-start;justify-content:space-between;}
+  .title{font-weight:800; font-size:42px; letter-spacing:2px; color:var(--bee);}
+  .title span{color:var(--honey-deep);}
+  .sub{color:var(--muted); font-size:17px; margin-top:2px; font-weight:500; letter-spacing:.3px;}
+  .kvic{display:inline-flex;align-items:center;gap:8px;background:var(--bee);color:#FFE9C2;font-size:14px;font-weight:700;padding:9px 16px;border-radius:999px;letter-spacing:.5px;}
+  .kvic b{color:#FFC83A;}
+  /* Arrows */
+  .arrow{display:flex;flex-direction:column;align-items:center;margin:9px 0;}
+  .arrow .shaft{height:16px;width:3px;background:linear-gradient(#F5AD1B,#B3660B);border-radius:2px;}
+  .arrow .tip{width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:11px solid #B3660B;}
+  .arrow .lbl{font-size:11px;font-weight:700;color:var(--muted);margin-top:2px;letter-spacing:.4px;text-transform:uppercase;}
+  /* Layer boxes */
+  .layer{background:#fff;border:2px solid var(--line);border-radius:18px;padding:12px 26px;display:flex;align-items:center;gap:26px;box-shadow:0 6px 18px rgba(62,39,35,.06);}
+  .layertag{writing-mode:vertical-rl;transform:rotate(180deg);font-size:12px;font-weight:800;letter-spacing:2px;color:#fff;padding:12px 8px;border-radius:9px;text-transform:uppercase;white-space:nowrap;}
+  .parts{flex:1;display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+  .badge{display:flex;align-items:center;gap:11px;background:#fff;border:1.5px solid #ead9c0;border-radius:14px;padding:8px 15px 8px 9px;}
+  .badge img{height:30px;width:30px;object-fit:contain;}
+  .badge.fb{height:30px;width:30px;border-radius:7px;display:grid;place-items:center;font-weight:800;font-size:14px;color:#fff;flex:none;}
+  .badge .n{font-size:15px;font-weight:800;color:var(--bee);line-height:1.05;}
+  .badge .s{font-size:11px;font-weight:600;color:var(--muted);}
+  .rightnote{margin-left:auto;text-align:right;font-size:12px;font-weight:600;color:var(--muted);line-height:1.4;}
+  .rightnote b{color:var(--bee);display:block;font-size:13px;}
+  /* USER chips */
+  .users{display:flex;gap:14px;justify-content:center;}
+  .user{width:198px;background:#fff;border:2px solid var(--bee);border-radius:16px;padding:11px 8px;text-align:center;box-shadow:0 4px 10px rgba(62,39,35,.08);}
+  .user .ic{font-size:26px;}
+  .user .t{font-weight:800;color:var(--bee);font-size:14px;margin-top:2px;}
+  .user .r{font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-top:1px;}
+  /* two-col row */
+  .row{display:grid;grid-template-columns:1.2fr 1fr;gap:22px;}
+  .box{background:#fff;border:2px solid var(--line);border-radius:18px;padding:12px 20px;box-shadow:0 6px 18px rgba(62,39,35,.06);}
+  .boxt{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:8px;color:#374151;}
+  .box .bt{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:var(--bee);}
+  /* data & ai */
+  .da{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .db{display:flex;align-items:center;gap:10px;}
+  .dblabel{font-size:11.5px;color:var(--muted);font-weight:600;line-height:1.35;}
+  .dblabel b{color:var(--bee-soft);display:block;font-size:12.5px;}
+  /* IoT */
+  .iot{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;}
+  .sensors{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+  .sensor{display:flex;align-items:center;gap:8px;background:#FFF4E3;border:1px solid #FAD8A6;border-radius:10px;padding:6px 10px;font-size:11.5px;font-weight:700;color:#92400E;}
+  .sensor .ic{font-size:15px;}
+  .flowline{font-size:10.5px;font-weight:700;color:#92400E;background:#FFF4E3;border-radius:8px;padding:6px 10px;border:1px dashed #FB923C;text-align:center;margin-top:8px;}
+  /* blockchain */
+  .chain-strip{display:flex;align-items:center;gap:6px;margin-top:9px;flex-wrap:wrap;}
+  .cnode{display:flex;align-items:center;gap:6px;background:linear-gradient(180deg,#FFFBEB,#FFF3D6);border:1px solid #E9C46A;border-radius:10px;padding:5px 11px;font-size:11.5px;font-weight:800;color:#78350F;}
+  .cnode .ic{font-size:14px;}
+  .carrow{color:#B3660B;font-weight:900;font-size:13px;}
+  .chain-record{margin-left:auto;display:flex;align-items:center;gap:8px;background:#3E2723;color:#FFD75C;font-size:11.5px;font-weight:800;padding:7px 14px;border-radius:10px;letter-spacing:.4px;}
+  /* outputs */
+  .outs{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .out{background:#fff;border:2px solid var(--line);border-radius:15px;padding:12px 8px;text-align:center;box-shadow:0 5px 14px rgba(62,39,35,.06);}
+  .out .ic{font-size:24px;}
+  .out .t{font-weight:800;color:var(--bee);font-size:12.5px;margin-top:4px;}
+  .out .s{font-size:10.5px;color:var(--muted);font-weight:600;margin-top:1px;}
+  /* dev strip */
+  .dev{background:#22293B;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:16px;padding:11px 30px;color:#fff;}
+  .dev .t{font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#9fb3d1;display:flex;align-items:center;gap:8px;}
+  .dev img{height:26px;width:26px;object-fit:contain;}
+  .dev .step{display:flex;align-items:center;gap:9px;background:#FFFFFF12;border:1px solid #FFFFFF24;border-radius:11px;padding:6px 13px;font-weight:700;font-size:13px;}
+  .dev .step.g{color:#F5F5F5;}
+  .dev .arr{color:#8aa0c0;font-weight:900;font-size:16px;}
+  /* flow legend */
+  .flowline2{text-align:center;font-size:11px;font-weight:700;color:var(--honey-deep);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+  .pill{display:inline-flex;align-items:center;gap:6px;background:#F1E4C8;color:var(--bee-soft);border:1px solid #E4CCA0;font-size:11px;font-weight:700;border-radius:999px;padding:3px 11px;}
+</style>
+</head>
+<body class="hex">
+<div class="slide">
+
+  <!-- ===================== HEADER ===================== -->
+  <div class="head">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div style="width:62px;height:62px;border-radius:18px;background:linear-gradient(135deg,#F5AD1B,#D98A0F);display:grid;place-items:center;font-size:34px;box-shadow:0 6px 14px rgba(217,138,15,.35);">🐝</div>
+      <div>
+        <div class="title">HONEY CHAIN — <span>SYSTEM ARCHITECTURE</span></div>
+        <div class="sub">AI + IoT + Blockchain Based Honey Traceability &amp; Smart Beekeeping · Hive-to-Bottle Trust</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span class="pill">Smart India Hackathon · 2026</span>
+      <span class="kvic">🏛️ KVIC <b>HONEY MISSION</b></span>
+    </div>
+  </div>
+
+  <!-- ===================== 1. USERS ===================== -->
+  <div style="margin-top:22px;">
+    <div class="flowline2">1 · User / Input Layer</div>
+    <div class="users" style="margin-top:8px;">
+      <div class="user"><div class="ic">🧑🌾</div><div class="t">Beekeeper</div><div class="r">Farmer · Apiary</div></div>
+      <div class="user"><div class="ic">🏛️</div><div class="t">Admin / KVIC Officer</div><div class="r">Monitoring</div></div>
+      <div class="user"><div class="ic">🧪</div><div class="t">Lab / Quality Inspector</div><div class="r">Testing</div></div>
+      <div class="user"><div class="ic">🏭</div><div class="t">Processor / Distributor</div><div class="r">Supply Chain</div></div>
+      <div class="user"><div class="ic">🛒</div><div class="t">Consumer</div><div class="r">QR Verify</div></div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="shaft"></div><div class="tip"></div><div class="lbl">Requests</div></div>
+
+  <!-- ===================== 2. FRONTEND ===================== -->
+  <div class="layer">
+    <div class="layertag" style="background:#0284C7;">Frontend</div>
+    <div class="parts">
+      <div class="badge"><img src="https://cdn.simpleicons.org/react/61DAFB" onerror="this.style.display='none';this.parentNode.querySelectorAll('.fb')[0].style.display='grid'"/><span class="fb" style="display:none;background:#61DAFB;">R</span><div><div class="n">React.js</div><div class="s">SPA · UI</div></div></div>
+      <div class="badge"><img src="https://cdn.simpleicons.org/tailwindcss/38BDF8" onerror="this.parentNode.querySelectorAll('.fb')[0].style.display='grid';this.style.display='none'"/><span class="fb" style="display:none;background:#38BDF8;">T</span><div><div class="n">Tailwind CSS</div><div class="s">Responsive Design</div></div></div>
+      <div class="rightnote">Web &amp; Mobile User Interface<b>Beekeeper · KVIC · Lab · Consumer Portals</b></div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="shaft"></div><div class="tip"></div><div class="lbl">REST / HTTPS</div></div>
+
+  <!-- ===================== 3. BACKEND ===================== -->
+  <div class="layer">
+    <div class="layertag" style="background:#4C1D95;">Backend</div>
+    <div class="parts">
+      <div class="badge"><img src="https://cdn.simpleicons.org/django/44B78B" onerror="this.parentNode.querySelectorAll('.fb')[1].style.display='grid';this.style.display='none'"/><span class="fb" style="display:none;background:#44B78B;">Dj</span><div><div class="n">Django</div><div class="s">Application Server</div></div></div>
+      <div class="badge"><img src="https://cdn.simpleicons.org/django/092E20" onerror="this.parentNode.querySelectorAll('.fb')[2].style.display='grid';this.style.display='none'"/><span class="fb" style="display:none;background:#092E20;">DRF</span><div><div class="n">Django REST Framework</div><div class="s">API Layer</div></div></div>
+      <div class="rightnote">Authentication · APIs · Business Logic<b>REST API · RBAC · Business Rules</b></div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="shaft"></div><div class="tip"></div><div class="lbl">Queries · Predictions</div></div>
+
+  <!-- ===================== 4 & 5. DATA / AI + IoT ===================== -->
+  <div class="row">
+    <!-- Data & AI -->
+    <div class="box">
+      <div class="boxt"><span>4 · Data &amp; AI Layer</span></div>
+      <div class="da" style="margin-top:10px;">
+        <div style="background:#E6F7F4;border:1px solid #99D9CF;border-radius:13px;padding:11px 13px;">
+          <div class="db"><img src="https://cdn.simpleicons.org/postgresql/4169E1" style="height:30px;width:30px;" onerror="this.outerHTML='<b class=&quot;fb&quot; style=&quot;display:grid;width:30px;height:30px;border-radius:7px;background:#4169E1;color:#fff;place-items:center;font-weight:800&quot;>Pg</b>'"/><div class="bt" style="color:#115E59;">Database</div></div>
+          <div class="dblabel" style="margin-top:6px;"><b>PostgreSQL</b>Stores beekeeper · hive · sensor · batch · quality &amp; transaction data</div>
+        </div>
+        <div style="background:#ECFDF5;border:1px solid #7FD9B0;border-radius:13px;padding:11px 13px;">
+          <div class="db"><img src="https://cdn.simpleicons.org/python/3776AB" style="height:30px;width:30px;" onerror="this.outerHTML='<b class=&quot;fb&quot; style=&quot;display:grid;width:30px;height:30px;border-radius:7px;background:#3776AB;color:#fff;place-items:center;font-weight:800&quot;>Py</b>'"/><img src="https://cdn.simpleicons.org/scikitlearn/F7931E" style="height:28px;width:28px;margin-left:-6px;" onerror="this.outerHTML='<b class=&quot;fb&quot; style=&quot;display:grid;width:28px;height:28px;border-radius:7px;background:#F7931E;color:#fff;place-items:center;font-weight:800&quot;>sk</b>'"/><div class="bt" style="color:#047857;">AI / ML</div></div>
+          <div class="dblabel" style="margin-top:6px;"><b>Python · Scikit-learn · XGBoost</b>Hive health anomaly detection · honey yield prediction</div>
+        </div>
+      </div>
+    </div>
+    <!-- IoT -->
+    <div class="box" style="border-color:#F5D19A;">
+      <div class="boxt"><span>5 · IoT Smart Hive Layer</span></div>
+      <div class="iot" style="margin-top:10px;">
+        <div style="background:#7F1D1D;border-radius:12px;padding:9px 4px;display:grid;place-items:center;">
+          <img src="https://cdn.simpleicons.org/espressif/E7352C" style="height:34px;width:34px;filter:brightness(2.2);" onerror="this.outerHTML='<b class=&quot;fb&quot; style=&quot;display:grid;width:34px;height:34px;border-radius:9px;background:#E7352C;color:#fff;place-items:center;font-weight:800&quot;>ESP</b>'"/>
+          <div style="color:#FFE9E9;font-weight:800;font-size:11px;margin-top:4px;">ESP32</div>
+        </div>
+        <div class="sensors">
+          <div class="sensor"><span class="ic">🌡️</span>Temperature</div>
+          <div class="sensor"><span class="ic">💧</span>Humidity</div>
+          <div class="sensor"><span class="ic">⚖️</span>Hive Weight</div>
+          <div class="sensor"><span class="ic">🎧</span>Sound / Vibration</div>
+        </div>
+      </div>
+      <div class="flowline">📡 ESP32 → MQTT / Gateway IoT Data → Django Backend</div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="shaft"></div><div class="tip"></div><div class="lbl">Hash Records</div></div>
+
+  <!-- ===================== 6. BLOCKCHAIN ===================== -->
+  <div class="layer">
+    <div class="layertag" style="background:#B3660B;">Blockchain</div>
+    <div class="parts">
+      <div class="badge"><img src="https://cdn.simpleicons.org/hyperledger/2F3134" onerror="this.parentNode.querySelectorAll('.fb')[3].style.display='grid';this.style.display='none'"/><span class="fb" style="display:none;background:#2F3134;">HL</span><div><div class="n">Hyperledger Fabric</div><div class="s">Permissioned Network</div></div></div>
+      <div class="chain-strip" style="flex:1;">
+        <span class="cnode"><span class="ic">🐝</span>Hive</span><span class="carrow">→</span>
+        <span class="cnode"><span class="ic">🍯</span>Harvest</span><span class="carrow">→</span>
+        <span class="cnode"><span class="ic">🧪</span>Quality</span><span class="carrow">→</span>
+        <span class="cnode"><span class="ic">🏭</span>Processing</span><span class="carrow">→</span>
+        <span class="cnode"><span class="ic">📦</span>Packaging</span>
+        <span class="chain-record">🔗 Blockchain Record · Immutable Traceability</span>
+      </div>
+      <div class="rightnote">Unique Honey Batch ID<b style="font-family:Consolas,monospace;color:#B3660B;">HC-KA-2026-000127</b></div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="shaft"></div><div class="tip"></div><div class="lbl">Digital Passport</div></div>
+
+  <!-- ===================== 7. QR ===================== -->
+  <div class="layer">
+    <div class="layertag" style="background:#15803D;">QR</div>
+    <div class="parts" style="justify-content:center;gap:20px;">
+      <div class="badge">🔳<div><div class="n">Dynamic QR Code</div><div class="s">Per-bottle unique</div></div></div>
+      <div class="badge">🪪<div><div class="n">Digital Honey Passport</div><div class="s">Full journey record</div></div></div>
+      <div class="badge">📱<div><div class="n">Consumer Scan</div><div class="s">Mobile / web</div></div></div>
+      <div class="badge">✅<div><div class="n">Authenticity Verification</div><div class="s">Verified honey</div></div></div>
+      <div class="badge">🛡️<div><div class="n">Anti-Counterfeit</div><div class="s">Repeated-scan flags</div></div></div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="shaft"></div><div class="tip"></div><div class="lbl">Value &amp; Insights</div></div>
+
+  <!-- ===================== 8. OUTPUTS ===================== -->
+  <div class="outs">
+    <div class="out" style="border-color:#B7C9E8;background:#EAF3FF;"><div class="ic">🐝</div><div class="t">Smart Hive Monitoring</div><div class="s">Real-time IoT telemetry + alerts</div></div>
+    <div class="out" style="border-color:#F0D6A0;background:#FFF7E6;"><div class="ic">📊</div><div class="t">Honey Yield Prediction</div><div class="s">AI quantity · date · confidence</div></div>
+    <div class="out" style="border-color:#B9DCC0;background:#EEF9EF;"><div class="ic">🔗</div><div class="t">End-to-End Traceability</div><div class="s">Hive → bottle, on ledger</div></div>
+    <div class="out" style="border-color:#E9B9B9;background:#FDF0F0;"><div class="ic">🔳</div><div class="t">Consumer Verification</div><div class="s">QR scan · anti-counterfeit</div></div>
+  </div>
+
+  <!-- ===================== DEVOPS ===================== -->
+  <div style="margin-top:16px;">
+    <div class="dev">
+      <span class="t">⚙️ Development &amp; Deployment</span>
+      <span class="step g"><img src="https://cdn.simpleicons.org/git/F05032" style="border-radius:5px;" onerror="this.outerHTML='<b style=&quot;color:#F05032&quot;>︎Git</b>'"/>Git</span>
+      <span class="arr">→</span>
+      <span class="step g"><img src="https://cdn.simpleicons.org/github/181717" style="border-radius:50%;outline:1px solid #ffffff4d;" onerror="this.outerHTML='<b style=&quot;color:#fff&quot;>GitHub</b>'"/>GitHub</span>
+      <span class="arr">→</span>
+      <span class="step g"><img src="https://cdn.simpleicons.org/docker/2496ED" style="border-radius:5px;" onerror="this.outerHTML='<b style=&quot;color:#2496ED&quot;>Docker</b>'"/>Docker</span>
+      <span style="margin-left:6px;font-size:11px;font-weight:600;color:#93a7c8;">CI/CD · Containerized Micro-Services · KVIC NAFIS Deployment</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

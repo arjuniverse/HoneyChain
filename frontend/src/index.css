@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
+
+  --color-honey-50: #FFFBE9;
+  --color-honey-100: #FFF4CC;
+  --color-honey-200: #FFE794;
+  --color-honey-300: #FFD75C;
+  --color-honey-400: #FFC83A;
+  --color-honey-500: #F5AD1B;
+  --color-honey-600: #D98A0F;
+  --color-honey-700: #B3660B;
+  --color-honey-800: #8F4F12;
+  --color-honey-900: #754113;
+
+  --color-amber-soft: #FFF1DE;
+  --color-amber-deep: #B9822C;
+  --color-bee-950: #2B1712;
+  --color-bee-900: #3E2723;
+  --color-bee-800: #4E342E;
+  --color-bee-700: #5D4037;
+  --color-cream: #FDF6E9;
+  --color-leaf-700: #2E7D32;
+  --color-leaf-600: #43A047;
+  --color-leaf-100: #E8F5E9;
+  --color-warn: #F9A825;
+  --color-warn-bg: #FFF8E1;
+  --color-dang: #E53935;
+  --color-dang-bg: #FFEBEE;
+}
+
+html { scroll-behavior: smooth; }
+body { @apply bg-cream text-bee-900 font-sans antialiased; }
+
+.glass { background: rgba(255, 255, 255, 0.82); backdrop-filter: blur(10px); }
+.card { @apply bg-white rounded-2xl shadow-sm ring-1 ring-black/5; }
+.display { @apply font-display; }
+
+.grid-hex {
+  background-image:
+    linear-gradient(#F5AD1B14 1px, transparent 1px),
+    linear-gradient(90deg, #F5AD1B14 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+@keyframes pulse-soft { 0%,100% { opacity:1 } 50% { opacity:.45 } }
+.live-dot { animation: pulse-soft 1.6s infinite; }
+
+@keyframes slide-up { from { opacity:0; transform: translateY(8px);} to {opacity:1; transform:none;} }
+.slide-up { animation: slide-up .35s ease both; }
+
+.trace-line { position: relative; }
+.trace-line::after { content: ""; position: absolute; left: 15px; top: 34px; bottom: -6px; width: 2px; background: linear-gradient(#F5AD1B, #F5AD1B55); }
+
+input, select, textarea { @apply outline-none; }

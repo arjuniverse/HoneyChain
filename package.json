@@ -1,0 +1,16 @@
+{
+  "name": "honey-chain",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Honey Chain - blockchain-based honey traceability & smart beekeeping platform (KVIC)",
+  "scripts": {
+    "dev": "concurrently -n BACKEND,FRONTEND -c yellow,cyan \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:backend": "node backend/src/server.js",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "install:all": "npm install && npm --prefix backend install && npm --prefix frontend install",
+    "build": "npm --prefix frontend run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
