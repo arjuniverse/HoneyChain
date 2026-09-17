@@ -1,4 +1,4 @@
-# 🐝 Honey Chain — KVIC Honey Traceability & Smart Beekeeping
+# Honey Chain — KVIC Honey Traceability & Smart Beekeeping
 
 AI + IoT + Blockchain + QR platform for rural beekeepers (Smart India Hackathon prototype).
 
